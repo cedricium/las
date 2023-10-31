@@ -41,6 +41,8 @@ func serveApplication() {
 	auth.POST("/login", controllers.Login)
 	auth.POST("/register", controllers.Register)
 
+	r.GET("/healthz", controllers.Health)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
