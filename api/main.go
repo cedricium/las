@@ -3,6 +3,7 @@ package main
 import (
 	"las_api/controllers"
 	"las_api/database"
+	"las_api/middleware"
 	"las_api/models"
 	"log"
 	"os"
@@ -37,11 +38,12 @@ func loadEnv() {
 func serveApplication() {
 	r := gin.Default()
 
-	auth := r.Group("/auth")
-	auth.POST("/login", controllers.Login)
-	auth.POST("/register", controllers.Register)
+	api := r.Group("/api")
+	api.GET("/healthz", controllers.Health)
 
-	r.GET("/healthz", controllers.Health)
+	auth := api.Group("/auth")
+	auth.POST("/login", controllers.Login)
+	auth.POST("/register", middleware.AuthRequired(), controllers.Register)
 
 	port := os.Getenv("PORT")
 	if port == "" {

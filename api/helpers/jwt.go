@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"las_api/models"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -54,18 +53,6 @@ func CurrentAdmin(ctx *gin.Context) (models.Admin, error) {
 		return models.Admin{}, err
 	}
 	return admin, nil
-}
-
-func JWTAuthMiddleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		err := ValidateJWT(ctx)
-		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
-			ctx.Abort()
-			return
-		}
-		ctx.Next()
-	}
 }
 
 func getToken(ctx *gin.Context) (*jwt.Token, error) {
