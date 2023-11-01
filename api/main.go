@@ -47,6 +47,17 @@ func serveApplication() {
 
 	inventory := api.Group("/inventory", middleware.AuthRequired())
 	inventory.POST("/", controllers.Import)
+	// inventory.GET("/")                 // get current inventory and status of each item
+	// inventory.GET("/:id")              // get inventory item and its recent transactions
+	// inventory.PUT("/:id")              // update inventory item
+	// inventory.POST("/:id/transaction") // checkout/issue item
+	// inventory.PUT("/:id/transaction")  // mark item returned
+
+	// patrons := api.Group("/patrons")
+	// patrons.GET("/")    // get list of existing patrons
+	// patrons.POST("/")   // create new patron affiliated with library
+	// patrons.GET("/:id") // get specific patron and their recent transactions
+	// patrons.PUT("/:id") // update patron information; pay outstanding balance
 
 	port := os.Getenv("PORT")
 	if port == "" {
