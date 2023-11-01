@@ -1,9 +1,9 @@
 # 📚 Libraries Are Sacred (LAS)
 
-Welcome to Libraries Are Sacred (LAS), a gateway to streamlined library management
-with a purposefully simple full-stack web app. The name "Libraries Are Sacred
-(LAS)" serves as a clever mnemonic for the app, simplifying the understanding of
-its core purpose—a library automation system designed to make administrative
+Welcome to Libraries Are Sacred, a gateway to streamlined library management
+with a purposefully simple full-stack web app. The name "Libraries Are Sacred"
+serves as a clever mnemonic for the app, simplifying the understanding of its
+core purpose—a library automation system (LAS) designed to make administrative
 tasks effortless.
 
 LAS is designed with a laser focus on simplicity, and this extends to user access.
