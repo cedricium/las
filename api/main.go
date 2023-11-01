@@ -20,10 +20,14 @@ func main() {
 
 func loadDatabase() {
 	database.Connect()
-	database.DB.AutoMigrate(&models.Admin{})
-	database.DB.AutoMigrate(&models.Patron{})
-	database.DB.AutoMigrate(&models.Book{})
-	database.DB.AutoMigrate(&models.Transaction{})
+	if err := database.DB.AutoMigrate(
+		&models.Admin{},
+		&models.Patron{},
+		&models.Book{},
+		&models.Transaction{},
+	); err != nil {
+		log.Fatal("Error migrating/updating database schemas")
+	}
 }
 
 func loadEnv() {
@@ -63,5 +67,7 @@ func serveApplication() {
 	if port == "" {
 		port = "8080"
 	}
-	r.Run(":" + port)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatal("Error starting HTTP server")
+	}
 }
