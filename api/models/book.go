@@ -1,6 +1,7 @@
 package models
 
 import (
+	"las_api/database"
 	"time"
 )
 
@@ -29,4 +30,14 @@ type Book struct {
 	// "text_reviews_count":"8",
 	// "publication_date":"3/15/1974",
 	// "publisher":"University Of Chicago Press"
+}
+
+type Inventory []*Book
+
+func (i *Inventory) Save() (bool, error) {
+	err := database.DB.Create(i).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

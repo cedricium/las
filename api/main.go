@@ -45,6 +45,9 @@ func serveApplication() {
 	auth.POST("/login", controllers.Login)
 	auth.POST("/register", middleware.AuthRequired(), controllers.Register)
 
+	inventory := api.Group("/inventory", middleware.AuthRequired())
+	inventory.POST("/", controllers.Import)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
