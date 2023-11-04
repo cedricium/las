@@ -15,7 +15,7 @@ type Book struct {
 	PublicationDate time.Time `gorm:"not null" json:"publication_date"`
 	FrappeBookID    string    `gorm:"not null" json:"frappe_book_id"`
 
-	Transactions []Transaction
+	Transactions []*Transaction
 
 	// === Frappe Book Schema ===
 	// "bookID":"39763",
@@ -36,6 +36,33 @@ type Inventory []*Book
 
 func (i *Inventory) Save() (bool, error) {
 	err := database.DB.Create(i).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// TODO: add/handle pagination using Limit & Offset
+func FindAllBooks() (Inventory, error) {
+	var bb Inventory
+	err := database.DB.Find(&bb).Error
+	if err != nil {
+		return Inventory{}, err
+	}
+	return bb, nil
+}
+
+func FindBookById(id uint) (Book, error) {
+	var b = Book{Base: Base{ID: id}}
+	err := database.DB.Preload("Transactions").Find(&b).Error
+	if err != nil {
+		return Book{}, err
+	}
+	return b, nil
+}
+
+func (b *Book) Update() (bool, error) {
+	err := database.DB.Save(&b).Error
 	if err != nil {
 		return false, err
 	}

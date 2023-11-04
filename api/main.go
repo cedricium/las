@@ -50,10 +50,10 @@ func serveApplication() {
 	auth.POST("/register", middleware.AuthRequired(), controllers.Register)
 
 	inventory := api.Group("/inventory", middleware.AuthRequired())
-	inventory.POST("/", controllers.Import)
-	// inventory.GET("/")                 // get current inventory and status of each item
-	// inventory.GET("/:id")              // get inventory item and its recent transactions
-	// inventory.PUT("/:id")              // update inventory item
+	inventory.POST("/", controllers.Import)                // add items to library inventory
+	inventory.GET("/", controllers.ListInventory)          // get current inventory and status of each item
+	inventory.GET("/:id", controllers.GetInventoryItem)    // get inventory item and its recent transactions
+	inventory.PUT("/:id", controllers.UpdateInventoryItem) // update inventory item
 	// inventory.POST("/:id/transaction") // checkout/issue item
 	// inventory.PUT("/:id/transaction")  // mark item returned
 

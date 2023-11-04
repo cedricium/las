@@ -3,6 +3,7 @@ package controllers
 import (
 	"las_api/models"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,14 @@ type BookImportInput struct {
 
 type ImportPayload struct {
 	Books []BookImportInput `binding:"dive"`
+}
+
+// why might a librarian need to update these?
+type BookUpdateInput struct {
+	Title           string `json:"title"`
+	Authors         string `json:"authors"`
+	Publisher       string `json:"publisher"`
+	PublicationDate string `json:"publication_date"`
 }
 
 func Import(ctx *gin.Context) {
@@ -54,4 +63,70 @@ func Import(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"success": ok})
+}
+
+func ListInventory(ctx *gin.Context) {
+	books, err := models.FindAllBooks()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"inventory": books})
+}
+
+func GetInventoryItem(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	book, err := models.FindBookById(uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"book": book})
+}
+
+func UpdateInventoryItem(ctx *gin.Context) {
+	id, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	var updates BookUpdateInput
+	if err := ctx.ShouldBindJSON(&updates); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	book, err := models.FindBookById(uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	if updates.Title != "" {
+		book.Title = updates.Title
+	}
+
+	if updates.Authors != "" {
+		book.Authors = updates.Authors
+	}
+
+	if updates.Publisher != "" {
+		book.Publisher = updates.Publisher
+	}
+
+	if updates.PublicationDate != "" {
+		date, _ := time.Parse("1/2/2006", updates.PublicationDate)
+		book.PublicationDate = date
+	}
+
+	book.Update()
+	ctx.JSON(http.StatusOK, gin.H{"book": book})
 }
