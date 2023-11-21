@@ -7,10 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthRequired() gin.HandlerFunc {
+func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		err := helpers.ValidateJWT(ctx)
-		if err != nil {
+		if err := helpers.ValidateJWT(ctx); err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 			ctx.Abort()
 			return

@@ -3,6 +3,7 @@ package helpers
 import (
 	"errors"
 	"fmt"
+	api "las_api"
 	"las_api/models"
 	"os"
 	"strconv"
@@ -13,16 +14,16 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var privateKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
+var key = []byte(os.Getenv("JWT_PRIVATE_KEY"))
 
-func GenerateJWT(admin models.Admin) (string, error) {
+func GenerateJWT(a models.Admin) (string, error) {
 	ttl, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  admin.ID,
+		"id":  a.ID,
 		"iat": time.Now().Unix(),
-		"eat": time.Now().Add(time.Second * time.Duration(ttl)).Unix(),
+		"exp": time.Now().Add(time.Second * time.Duration(ttl)).Unix(),
 	})
-	return token.SignedString(privateKey)
+	return token.SignedString(key)
 }
 
 func ValidateJWT(ctx *gin.Context) error {
@@ -38,17 +39,16 @@ func ValidateJWT(ctx *gin.Context) error {
 	return errors.New("invalid token provided")
 }
 
-func CurrentAdmin(ctx *gin.Context) (models.Admin, error) {
-	err := ValidateJWT(ctx)
-	if err != nil {
+func CurrentAdmin(ctx *gin.Context, s api.Store) (models.Admin, error) {
+	if err := ValidateJWT(ctx); err != nil {
 		return models.Admin{}, err
 	}
 
 	token, _ := getToken(ctx)
 	claims, _ := token.Claims.(jwt.MapClaims)
-	adminId := uint(claims["id"].(float64))
+	id := claims["id"]
 
-	admin, err := models.FindAdminById(adminId)
+	admin, err := s.AdminById(id.(string))
 	if err != nil {
 		return models.Admin{}, err
 	}
@@ -56,21 +56,20 @@ func CurrentAdmin(ctx *gin.Context) (models.Admin, error) {
 }
 
 func getToken(ctx *gin.Context) (*jwt.Token, error) {
-	tokenStr := getTokenFromRequest(ctx)
-	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(getTokenFromRequest(ctx), func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
-		return privateKey, nil
+		return key, nil
 	})
 	return token, err
 }
 
 func getTokenFromRequest(ctx *gin.Context) string {
-	bearerToken := ctx.Request.Header.Get("Authorization")
-	splitToken := strings.Split(bearerToken, " ")
-	if len(splitToken) == 2 {
-		return splitToken[1]
+	bearer := ctx.Request.Header.Get("Authorization")
+	parts := strings.Split(bearer, " ")
+	if len(parts) == 2 {
+		return parts[1]
 	}
 	return ""
 }
