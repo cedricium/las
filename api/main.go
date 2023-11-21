@@ -1,73 +1,36 @@
-package main
+package api
 
-import (
-	"las_api/controllers"
-	"las_api/database"
-	"las_api/middleware"
-	"las_api/models"
-	"log"
-	"os"
+// import (
+// 	"las_api/database"
+// 	"las_api/routes"
+// 	"log"
+// 	"os"
 
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-)
+// 	"github.com/gin-gonic/gin"
+// 	"github.com/joho/godotenv"
+// )
 
-func main() {
-	loadEnv()
-	loadDatabase()
-	serveApplication()
-}
+// func main() {
+// 	env := os.Getenv("ENVIRONMENT")
+// 	if env != "production" {
+// 		if err := godotenv.Load(".env.local"); err != nil {
+// 			log.Fatal("error loading .env file. Are you sure one exists?")
+// 		}
+// 	}
 
-func loadDatabase() {
-	database.Connect()
-	if err := database.DB.AutoMigrate(
-		&models.Admin{},
-		&models.Patron{},
-		&models.Book{},
-		&models.Transaction{},
-	); err != nil {
-		log.Fatal("Error migrating/updating database schemas")
-	}
-}
+// 	s, err := database.NewStore(os.Getenv("DB_URL"))
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-func loadEnv() {
-	env := os.Getenv("LAS_ENV")
-	if env != "production" {
-		if err := godotenv.Load(".env.local"); err != nil {
-			log.Fatal("Error loading .env file. Are you sure one exists?")
-		}
-	}
-}
+// 	r := gin.Default()
+// 	routes.Attach(r, s)
 
-func serveApplication() {
-	r := gin.Default()
-
-	api := r.Group("/api")
-	api.GET("/healthz", controllers.Health)
-
-	auth := api.Group("/auth")
-	auth.POST("/login", controllers.Login)
-	auth.POST("/register", middleware.AuthRequired(), controllers.Register)
-
-	inventory := api.Group("/inventory", middleware.AuthRequired())
-	inventory.POST("/", controllers.Import)                // add items to library inventory
-	inventory.GET("/", controllers.ListInventory)          // get current inventory and status of each item
-	inventory.GET("/:id", controllers.GetInventoryItem)    // get inventory item and its recent transactions
-	inventory.PUT("/:id", controllers.UpdateInventoryItem) // update inventory item
-	// inventory.POST("/:id/transaction") // checkout/issue item
-	// inventory.PUT("/:id/transaction")  // mark item returned
-
-	// patrons := api.Group("/patrons")
-	// patrons.GET("/")    // get list of existing patrons
-	// patrons.POST("/")   // create new patron affiliated with library
-	// patrons.GET("/:id") // get specific patron and their recent transactions
-	// patrons.PUT("/:id") // update patron information; pay outstanding balance
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	if err := r.Run(":" + port); err != nil {
-		log.Fatal("Error starting HTTP server")
-	}
-}
+// 	port := os.Getenv("PORT")
+// 	if port == "" {
+// 		port = "8080"
+// 	}
+// 	if err := r.Run(":" + port); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
